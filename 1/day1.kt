@@ -13,15 +13,15 @@ fun getLists(): Pair<List<Int>, List<Int>> {
 }
 
 fun part1(l1: List<Int>, l2: List<Int>): Int {
-    return l1.zip(l2).sumOf { (a, b) -> abs(a - b) }.also {println(it)}
+    return l1.zip(l2).sumOf { (a, b) -> abs(a - b) }
 }
 
 fun part2(l1: List<Int>, l2: List<Int>): Int {
-    return l1.sumOf { lItem -> lItem * l2.count { it == lItem } }.also { println(it) }
+    return l1.sumOf { lItem -> lItem * l2.count { it == lItem } }
 }
 
 fun main() {
     val (l1, l2) = getLists()
-    part1(l1, l2)
-    part2(l1, l2)
+    part1(l1, l2).also(::println)
+    part2(l1, l2).also(::println)
 }
