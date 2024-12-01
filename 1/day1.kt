@@ -5,8 +5,8 @@ fun getLists(): Pair<List<Int>, List<Int>> {
     val lines = File("./input.txt").readLines()
     
     val (l1, l2) = lines.map { line ->
-        val (left, right) = line.split(Regex("\\s+"))
-        left.toInt() to right.toInt()
+        val (left, right) = line.split(Regex("\\s+")).map { it.toInt() }
+        left to right
     }.unzip()
 
     return l1.sorted() to l2.sorted()
