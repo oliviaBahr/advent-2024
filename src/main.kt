@@ -1,4 +1,5 @@
+import days.day3
 
 fun main() {
-    day19()
+    day3()
 }
