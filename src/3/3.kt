@@ -1,47 +1,56 @@
-package days
 import java.io.File
 
-fun getInput(): String {
-    return File("/Users/olivia/projects/advent/src/3/input.txt").readText()
-}
-
-fun noIdidntBuiltAParser(input: String): Sequence<MatchResult> {
-    val muls = """mul\(([0-9]+),([0-9]+)\)"""
-    val dos = """do\(\)"""
-    val donts = """don't\(\)"""
-    val pattern = Regex("$muls|$dos|$donts")
-    return pattern.findAll(input)
-}
+fun getInput(): String = File("${System.getProperty("user.dir")}/src/3/input.txt").readText()
 
 sealed class Expr {
     object Do : Expr()
     object Dont : Expr()
-    class Mult(val a: Int, val b: Int) : Expr() {
-        fun doOp(): Int = a * b
+    class Num(val n: Int) : Expr()
+    class Mult(val a: Expr, val b: Expr) : Expr()
+    class Seq(val e1: Expr, val e2: Expr) : Expr()
+}
+
+object Tokens {
+    const val DO = """do\(\)"""
+    const val DONT = """don't\(\)"""
+    const val MUL = """mul\(([0-9]{1,3}),([0-9]{1,3})\)"""
+}
+
+fun parseInput(): Expr {
+    val pattern = Regex("""${Tokens.MUL}|${Tokens.DO}|${Tokens.DONT}""")
+    val matches = pattern.findAll(getInput())
+    return matches.fold<MatchResult, Expr>(Expr.Num(0)) { acc, match ->
+        when (match.value) {
+            "do()" -> Expr.Seq(acc, Expr.Do)
+            "don't()" -> Expr.Seq(acc, Expr.Dont)
+            else -> {
+                val (_, a, b) = match.groupValues
+                Expr.Seq(acc, Expr.Mult(Expr.Num(a.toInt()), Expr.Num(b.toInt())))
+            }
+        }
+    }
+}
+
+fun eval(e: Expr, doOp: Boolean): Pair<Int, Boolean> {
+    return when (e) {
+        is Expr.Num -> Pair(e.n, doOp)
+        is Expr.Do -> Pair(0, true)
+        is Expr.Dont -> Pair(0, false)
+        is Expr.Mult -> {
+            val (v1, doOp_) = eval(e.a, doOp)
+            val (v2, doOp__) = eval(e.b, doOp_)
+            Pair(if (doOp__) v1 * v2 else 0, doOp__)
+        }
+        is Expr.Seq -> { // sequence means addition in this language for some reason
+            val (v1, doOp_) = eval(e.e1, doOp)
+            val (v2, doOp__) = eval(e.e2, doOp_)
+            Pair(v1 + v2, doOp__)
+        }
     }
 }
 
 fun day3() {
-    val corrupted = getInput()
-    val regexMatches = noIdidntBuiltAParser(corrupted)
-
-    val operations = regexMatches
-        .map {
-            when (it.value) {
-                "do()" -> Expr.Do
-                "don't()" -> Expr.Dont
-                else -> it.groupValues.let { (_, a, b) -> Expr.Mult(a.toInt(), b.toInt()) }
-            }
-        }
-        .toList()
-
-    val res = operations.fold(Pair(0, true)) { (acc, doOp), op ->
-        when (op) {
-            is Expr.Mult -> if (doOp) Pair(acc + op.doOp(), doOp) else Pair(acc, doOp)
-            is Expr.Do -> Pair(acc, true)
-            is Expr.Dont -> Pair(acc, false)
-        }
-    }
-
+    val expr = parseInput()
+    val res = eval(expr, true)
     println(res.first)
 }
