@@ -4,7 +4,7 @@ from typing import Iterator
 
 import numpy as np
 import pytest
-from colorama import Fore
+from colorama import Fore  # type: ignore
 from more_itertools import sliding_window
 from numpy.typing import NDArray
 
@@ -189,7 +189,7 @@ S.S.S.S.S.
 M.M.M.M.M.
 .........."""
     expected = 9
-    result = count_x_mas(test_str.splitlines(), True)
+    result = count_x_mas(test_str.splitlines(), True)  # type: ignore
     if result == expected:
         print(Fore.GREEN + "Correct")
     else:
